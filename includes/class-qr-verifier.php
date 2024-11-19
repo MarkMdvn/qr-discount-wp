@@ -1,41 +1,76 @@
 <?php
-require_once('../../../../wp-load.php'); // Adjust the path to the wp-load.php file as needed to ensure proper WordPress environment loading
 
-if (!current_user_can('manage_options')) { // Ensure that only users who can manage options (i.e., store managers) can access this page
-    wp_die('Unauthorized user');
-}
-
-$user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
-$qr_code_used = get_user_meta($user_id, 'qr_code_used', true);
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['mark_used'])) {
-    if (!$qr_code_used) {
-        update_user_meta($user_id, 'qr_code_used', 'yes');
-        $qr_code_used = 'yes';
-        $message = 'QR code marked as used.';
-    } else {
-        $message = 'QR code was already used.';
+if (!function_exists('add_custom_role_capabilities')) {
+    function add_custom_role_capabilities() {
+        $role = get_role('administrator');
+        if ($role) {
+            $role->add_cap('verify_qr', true);
+        }
     }
 }
 
+add_action('init', 'add_custom_role_capabilities');
+
+class QR_Verify {
+
+    public function __construct() {
+        add_shortcode('verify_qr_code', array($this, 'verify_qr_code_shortcode'));
+    }
+
+    public function verify_qr_code_shortcode() {
+        if (!current_user_can('verify_qr')) {
+            return 'Unauthorized access. Only authorized personnel can perform this action.';
+        }
+
+        $output = '<h1>Verify Discount Code</h1>';
+        $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
+
+        if (!$user_id) {
+            return 'Invalid access. No user ID provided.';
+        }
+
+        $qr_code_url = get_user_meta($user_id, 'qr_code_url', true);
+        $qr_code_used = get_user_meta($user_id, 'qr_code_used', true);
+        $unique_discount_code = get_user_meta($user_id, 'unique_discount_code', true);
+        $remaining_discount = get_user_meta($user_id, 'remaining_discount', true);
+
+        if ($qr_code_used) {
+            return $output . '<p>This discount code has already been fully used.</p>';
+        }
+
+        // Display QR Code and current discount details
+        $output .= '<img src="' . esc_url($qr_code_url) . '" alt="QR Code" style="width:200px;height:200px;"><br>';
+        $output .= '<p>Unique Discount Code: ' . esc_html($unique_discount_code) . '</p>';
+        $output .= '<p>Remaining Discount: €' . esc_html($remaining_discount) . '</p>';
+
+        // Form for updating discount
+        $output .= '<form method="post">
+                        Reduce Amount: <input type="number" name="amount_used" step="0.01" min="0.01" max="' . esc_attr($remaining_discount) . '" required>
+                        <input type="hidden" name="user_id" value="' . esc_attr($user_id) . '">
+                        <button type="submit" name="update_discount">Update Discount</button>
+                    </form>';
+
+        // Handle form submission
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_discount'])) {
+            $amount_used = floatval($_POST['amount_used']);
+            if ($amount_used > $remaining_discount) {
+                $output .= '<p>Amount exceeds available discount.</p>';
+            } else {
+                $new_amount = $remaining_discount - $amount_used;
+                update_user_meta($user_id, 'remaining_discount', $new_amount);
+                if ($new_amount <= 0) {
+                    update_user_meta($user_id, 'qr_code_used', 'yes');
+                }
+                $output .= '<p>Discount updated successfully. New Remaining Discount: €' . $new_amount . '</p>';
+            }
+        }
+
+        return $output;
+    }
+}
+
+
+new QR_Verify();
+
+
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify QR Code</title>
-</head>
-<body>
-<h1>Verify QR Code</h1>
-<?php if (isset($message)): ?>
-    <p><?php echo $message; ?></p>
-<?php endif; ?>
-<p>Status: <?php echo $qr_code_used ? 'Used' : 'Not Used'; ?></p>
-<?php if (!$qr_code_used): ?>
-    <form method="post">
-        <button type="submit" name="mark_used">Mark as Used</button>
-    </form>
-<?php endif; ?>
-</body>
-</html>

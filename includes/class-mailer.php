@@ -1,23 +1,19 @@
 <?php
 class QR_Mailer {
-    /**
-     * Sends an email to the user with the QR code.
-     *
-     * @param int $user_id User ID of the recipient.
-     * @param string $qr_code_url URL of the QR code image.
-     */
     public function send_qr_code($user_id, $qr_code_url) {
         $user_info = get_userdata($user_id);
+        $unique_code = get_user_meta($user_id, 'unique_discount_code', true); // Retrieve the unique code
         $to = $user_info->user_email;
-        $subject = 'Your Exclusive Discount QR Code';
-        $message = "Hello " . $user_info->first_name . ",\n\n";
-        $message .= "Thank you for registering. Here is your personal discount QR code:\n\n";
-        $message .= "<img src='" . esc_url($qr_code_url) . "' alt='Discount QR Code'>\n\n";
-        $message .= "Please show this code at our store to receive your discount.";
+        $subject = '¡Código QR de descuento!';
 
-        $headers = array('Content-Type: text/html; charset=UTF-8');
+        $message = "<html><body>";
+        $message .= "<p>Buenos días " . esc_html($user_info->first_name) . ",</p>";
+        $message .= "<p>Gracias por registrarte. Aquí tienes tu código QR y tu código único de descuento: $unique_code</p>";
+        $message .= "<p><img src='" . esc_url($qr_code_url) . "' alt='Discount QR Code'></p>";
+        $message .= "<p>Puedes enseñar este código en cualquier comercio vinculado para obtener un descuento.</p>";
+        $message .= "</body></html>";
 
-        wp_mail($to, $subject, $message, $headers);
+        wp_mail($to, $subject, $message, array('Content-Type: text/html; charset=UTF-8'));
     }
 }
 ?>

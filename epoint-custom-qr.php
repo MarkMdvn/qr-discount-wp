@@ -13,30 +13,31 @@
  * Update URI:        https://example.com/my-plugin/
  * Text Domain:       epoint-custom-qr
  * Domain Path:       /languages
+ */
 
-*/
-
-defined( 'ABSPATH' ) or die( 'No script kiddies please!' );
+defined('ABSPATH') or die('No script kiddies please!');
 
 // Plugin Activation
 function epoint_custom_qr_activate() {
-// Perform any setups here, such as setting up default options
+    // Perform any setups here, such as setting up default options
+    flush_rewrite_rules();
 }
-register_activation_hook( __FILE__, 'epoint_custom_qr_activate' );
+register_activation_hook(__FILE__, 'epoint_custom_qr_activate');
 
 // Plugin Deactivation
 function epoint_custom_qr_deactivate() {
-// Clean up data, if necessary, like removing custom roles or capabilities
+    // Clean up data, if necessary, like removing custom roles or capabilities
+    flush_rewrite_rules();
 }
-register_deactivation_hook( __FILE__, 'epoint_custom_qr_deactivate' );
+register_deactivation_hook(__FILE__, 'epoint_custom_qr_deactivate');
 
 // Include necessary files
 function epoint_custom_qr_includes() {
-include_once('includes/class-qr-generator.php');
-include_once('includes/class-mailer.php');
-include_once('includes/class-qr-verifier.php');
-include_once('includes/class-qr-frontend.php');
-include_once('includes/class-db-handler.php');
+    include_once('includes/class-qr-generator.php');
+    include_once('includes/class-mailer.php');
+    include_once('includes/class-qr-verifier.php');
+    include_once('includes/class-qr-frontend.php');
+    include_once('includes/class-db-handler.php');
 }
 add_action('plugins_loaded', 'epoint_custom_qr_includes');
 
@@ -47,6 +48,31 @@ function epoint_custom_qr_user_register($user_id) {
 
     $qr_mailer = new QR_Mailer();
     $qr_mailer->send_qr_code($user_id, $qr_code_url);
+    update_user_meta($user_id, 'qr_code_url', $qr_code_url);
 }
 add_action('user_register', 'epoint_custom_qr_user_register');
+
+function epoint_custom_add_user_endpoint() {
+    add_rewrite_tag('%user_id%', '([^&]+)');
+    add_rewrite_rule('^verify-qr/?user_id=([0-9]+)$', 'index.php?user_id=$matches[1]', 'top');
+
+}
+add_action('init', 'epoint_custom_add_user_endpoint');
+
+function epoint_custom_query_vars($vars) {
+    $vars[] = 'user_id';
+    return $vars;
+}
+add_filter('query_vars', 'epoint_custom_query_vars');
+
+function epoint_custom_template_redirect() {
+    $user_id = get_query_var('user_id');
+    if ($user_id && !current_user_can('verify_qr')) {
+        // Redirect or handle unauthorized access here
+        wp_redirect(home_url()); // Redirect to home page or to a custom error page
+        exit;
+    }
+}
+add_action('template_redirect', 'epoint_custom_template_redirect');
 ?>
+
