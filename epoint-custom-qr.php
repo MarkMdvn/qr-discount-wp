@@ -31,7 +31,6 @@ function epoint_custom_qr_includes() {
     include_once('includes/class-qr-generator.php');
     include_once('includes/class-mailer.php');
     include_once('includes/class-qr-verifier.php');
-    include_once('includes/class-qr-frontend.php');
     include_once('includes/class-db-handler.php');
 }
 add_action('plugins_loaded', 'epoint_custom_qr_includes');

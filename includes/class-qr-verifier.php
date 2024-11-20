@@ -2,10 +2,8 @@
 
 if (!function_exists('add_custom_role_capabilities')) {
     function add_custom_role_capabilities() {
-        // Define the roles to grant the capability to
         $roles = ['administrator', 'gestor_de_la_tienda', 'empleador'];
 
-        // Loop through each role and add the capability
         foreach ($roles as $role_name) {
             $role = get_role($role_name);
             if ($role) {
@@ -30,7 +28,7 @@ class QR_Verify {
 
         $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
 
-        // Handle form submission for numeric code verification
+        // Verificación del código numérico
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['numeric_code'])) {
             $numeric_code = sanitize_text_field($_POST['numeric_code']);
             $user_query = new WP_User_Query(array('meta_key' => 'unique_discount_code', 'meta_value' => $numeric_code));
@@ -55,13 +53,12 @@ class QR_Verify {
                              </form>';
         }
 
-        // Fetch user meta data only if user_id is valid
         $qr_code_url = get_user_meta($user_id, 'qr_code_url', true);
         $qr_code_used = get_user_meta($user_id, 'qr_code_used', true);
         $unique_discount_code = get_user_meta($user_id, 'unique_discount_code', true);
         $remaining_discount = get_user_meta($user_id, 'remaining_discount', true);
 
-        // Display QR Code and current discount details
+        // Lo que se muestra en el shortcode.
         $output .= '<img src="' . esc_url($qr_code_url) . '" alt="QR Code" style="width:200px;height:200px;"><br>';
         $output .= '<p>Código: ' . esc_html($unique_discount_code) . '</p>';
         $output .= '<p id="remainingDiscount">Cantidad restante: <strong>' . esc_html($remaining_discount) . ' €</strong></p>';
@@ -70,7 +67,7 @@ class QR_Verify {
             return $output . '<p>Este código de descuento ya se ha agotado.</p>';
         }
 
-        // Handle form submission for updating discount
+        // Actualización del descuento, funciona y todo
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_discount'])) {
             $amount_used = floatval($_POST['amount_used']);
             if ($amount_used > $remaining_discount) {
@@ -89,8 +86,7 @@ class QR_Verify {
                 return;
             }
         }
-
-        // Form for updating discount
+        
         $output .= '<form method="post">
                         Valor a descontar: <input type="number" name="amount_used" step="0.01" min="0.01" max="' . esc_attr($remaining_discount) . '" required>
                         <input type="hidden" name="user_id" value="' . esc_attr($user_id) . '"> <br><br>

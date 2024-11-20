@@ -2,7 +2,7 @@
 class QR_Mailer {
     public function send_qr_code($user_id, $qr_code_url) {
         $user_info = get_userdata($user_id);
-        $unique_code = get_user_meta($user_id, 'unique_discount_code', true); // Retrieve the unique code
+        $unique_code = get_user_meta($user_id, 'unique_discount_code', true); 
         $to = $user_info->user_email;
         $subject = '¡Código QR de descuento!';
 
