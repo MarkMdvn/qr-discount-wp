@@ -8,7 +8,7 @@ class QR_Mailer {
 
         $message = "<html><body>";
         $message .= "<p>Buenos días " . esc_html($user_info->first_name) . ",</p>";
-        $message .= "<p>Gracias por registrarte. Aquí tienes tu código QR y tu código único de descuento: $unique_code</p>";
+        $message .= "<p>Gracias por registrarte. Aquí tienes tu código QR y el número de descuento: $unique_code</p>";
         $message .= "<p><img src='" . esc_url($qr_code_url) . "' alt='Discount QR Code'></p>";
         $message .= "<p>Puedes enseñar este código en cualquier comercio vinculado para obtener un descuento.</p>";
         $message .= "</body></html>";

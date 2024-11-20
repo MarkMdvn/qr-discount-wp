@@ -1,9 +1,9 @@
 <?php
 /*
- * Plugin Name:       Código QR Único para Descuentos
- * Plugin URI:        https://example.com/plugins/the-basics/
- * Description:       Código QR Único para Descuentos es un plugin de WordPress y WooCommerce diseñado para generar códigos QR únicos para cada usuario al registrarse. Estos códigos QR sirven para aplicar descuentos únicos en tiendas físicas. Una vez que el usuario se registra, recibe un código QR por correo electrónico, el cual también puede visualizar en su área de cuenta dentro del sitio web. El personal de la tienda puede escanear el código QR para verificar su autenticidad y marcarlo como usado, asegurando que cada QR solo se utilice una vez. 
- * Version:           1.0.0
+ * Plugin Name:       Códigos QR promocionales para Descuentos - epoint
+ * Plugin URI:        https://www.epoint.es/
+ * Description:       Este plugin de WordPress y WooCommerce permite generar códigos QR únicos para cada usuario registrado. Estos códigos QR se utilizan para aplicar descuentos exclusivos en tiendas físicas. Al registrarse, el usuario recibe un código QR por correo electrónico, que también puede visualizar en su área de cuenta en el sitio web. Los empleados de la tienda pueden escanear el código QR para verificar su autenticidad y aplicar el descuento correspondiente, asegurando que cada código solo se utilice una vez.
+ * Version:           1.1.0
  * Requires at least: 5.2
  * Requires PHP:      7.2
  * Author:            Mark Mordvin
@@ -17,21 +17,16 @@
 
 defined('ABSPATH') or die('No script kiddies please!');
 
-// Plugin Activation
 function epoint_custom_qr_activate() {
-    // Perform any setups here, such as setting up default options
     flush_rewrite_rules();
 }
 register_activation_hook(__FILE__, 'epoint_custom_qr_activate');
 
-// Plugin Deactivation
 function epoint_custom_qr_deactivate() {
-    // Clean up data, if necessary, like removing custom roles or capabilities
     flush_rewrite_rules();
 }
 register_deactivation_hook(__FILE__, 'epoint_custom_qr_deactivate');
 
-// Include necessary files
 function epoint_custom_qr_includes() {
     include_once('includes/class-qr-generator.php');
     include_once('includes/class-mailer.php');
@@ -41,7 +36,6 @@ function epoint_custom_qr_includes() {
 }
 add_action('plugins_loaded', 'epoint_custom_qr_includes');
 
-// Hook into user registration to generate QR code
 function epoint_custom_qr_user_register($user_id) {
     $qr_generator = new QR_Generator();
     $qr_code_url = $qr_generator->generate_qr_code($user_id);
@@ -68,8 +62,7 @@ add_filter('query_vars', 'epoint_custom_query_vars');
 function epoint_custom_template_redirect() {
     $user_id = get_query_var('user_id');
     if ($user_id && !current_user_can('verify_qr')) {
-        // Redirect or handle unauthorized access here
-        wp_redirect(home_url()); // Redirect to home page or to a custom error page
+        wp_redirect(home_url());
         exit;
     }
 }
