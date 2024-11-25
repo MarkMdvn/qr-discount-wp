@@ -34,8 +34,20 @@ class QR_Generator {
         $result->saveToFile($full_path);
 
 
+        //db-handling
+        $user_info = get_userdata($user_id);
+        if (!$user_info) {
+            return false; // Exit if user data isn't found
+        }
+        $user_email = $user_info->user_email;
+        $display_name = $user_info->display_name;
+
         $qr_code_url = $upload_dir['baseurl'] . '/' . $file_path;
         update_user_meta($user_id, 'qr_code_url', $qr_code_url);
+        
+        $db_handler = new DB_Handler();
+        $db_handler->insert_qr_code_data($user_id, $qr_code_url, $unique_code, $user_email, $display_name);
+
         return $qr_code_url;
     }
 }

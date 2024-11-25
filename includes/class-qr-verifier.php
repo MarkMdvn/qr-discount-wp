@@ -75,8 +75,14 @@ class QR_Verify {
 
         // Actualización del descuento, funciona y todo
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_discount'])) {
-            // Check if 'amount_used' is provided and is a valid number
             $amount_used = isset($_POST['amount_used']) ? floatval($_POST['amount_used']) : 0;
+            $total_amount = isset($_POST['totalAmount']) ? floatval($_POST['totalAmount']) : 0;
+            $charged_amount = isset($_POST['chargedAmount']) ? floatval($_POST['chargedAmount']) : 0;
+
+            if ($total_amount < 0) {
+                $output .= '<p>Error: La cantidad total no puede ser negativa.</p>';
+                return; // Stop execution if the total amount is invalid
+            }
 
             if ($amount_used > $remaining_discount) {
                 $output .= '<p>La cantidad ingresada excede el límite del descuento.</p>';
@@ -88,12 +94,34 @@ class QR_Verify {
                 }
                 $output .= '<p>Descuento actualizado con éxito. Nuevo descuento restante: €' . $new_amount . '</p>';
                 $output .= '<p>Cantidad reducida: €' . number_format($amount_used, 2) . '</p>';
+
+                // Get user info
+                $user_info = get_userdata($user_id);
+                if (!$user_info) {
+                    error_log('Failed to retrieve user data for user ID: ' . $user_id);
+                    return;
+                }
+
+                // Log transaction data
+                $db_handler = new DB_Handler();
+                $db_handler->log_transaction([
+                    'client_user_id' => $user_id,
+                    'client_user_name' => $user_info->display_name,
+                    'client_user_email' => $user_info->user_email,  // Correctly getting the email
+                    'numeric_discount_code' => $unique_discount_code,
+                    'qr_code_url' => $qr_code_url,
+                    'total_amount' => $total_amount,
+                    'discount_applied' => $amount_used,
+                    'amount_charged' => $charged_amount
+                ]);
+
                 // Refresh the page to reflect the updated discount without resubmitting the form
                 $redirect_url = add_query_arg('user_id', $user_id, get_permalink());
                 echo '<script>window.location.href = "' . esc_js($redirect_url) . '";</script>';
                 return;
             }
         }
+
 
         $output .= '<form method="post" style="display:none;">
                         Valor a descontar: <input type="number" name="amount_used" step="0.01" min="0.01" max="' . esc_attr($remaining_discount) . '" required>
