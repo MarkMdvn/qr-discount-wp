@@ -150,6 +150,3 @@ Discounts are limited to the remaining balance. Once the balance is fully used, 
 
 ---
 
-## Support
-
-If you encounter any issues or have feature requests, please contact us at [your-support-email@example.com].
