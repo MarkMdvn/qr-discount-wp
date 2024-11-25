@@ -35,7 +35,7 @@ class QR_Generator {
 
 
         $qr_code_url = $upload_dir['baseurl'] . '/' . $file_path;
-        update_user_meta($user_id, 'qr_code_url', $qr_code_url); 
+        update_user_meta($user_id, 'qr_code_url', $qr_code_url);
         return $qr_code_url;
     }
 }

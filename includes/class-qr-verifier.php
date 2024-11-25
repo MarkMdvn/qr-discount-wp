@@ -2,7 +2,7 @@
 
 if (!function_exists('add_custom_role_capabilities')) {
     function add_custom_role_capabilities() {
-        $roles = ['administrator', 'gestor_de_la_tienda', 'empleador'];
+        $roles = ['administrator', 'employer', 'empleador'];
 
         foreach ($roles as $role_name) {
             $role = get_role($role_name);
@@ -21,13 +21,15 @@ class QR_Verify {
         add_shortcode('verify_qr_code', array($this, 'verify_qr_code_shortcode'));
     }
 
+
     public function verify_qr_code_shortcode() {
         if (!current_user_can('verify_qr')) {
             return 'Acceso no autorizado. Solo el personal de la tienda puede realizar esta acción.';
         }
 
         $user_id = isset($_GET['user_id']) ? intval($_GET['user_id']) : 0;
-
+        $output = '';
+        
         // Verificación del código numérico
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['numeric_code'])) {
             $numeric_code = sanitize_text_field($_POST['numeric_code']);
@@ -36,7 +38,7 @@ class QR_Verify {
             if (!empty($users)) {
                 $user_id = $users[0]->ID;
                 $user_info = get_userdata($user_id);
-                $user_name = $user_info->display_name;
+                $user_name = $user_info ? $user_info->display_name : 'Usuario';
                 $output .= "<p>Código encontrado. Nombre del cliente: {$user_name}.</p>";
                 $output .= '<a href="' . esc_url(add_query_arg('user_id', $user_id, get_permalink())) . '" class="button">Continuar</a>';
                 return $output;
@@ -58,9 +60,13 @@ class QR_Verify {
         $unique_discount_code = get_user_meta($user_id, 'unique_discount_code', true);
         $remaining_discount = get_user_meta($user_id, 'remaining_discount', true);
 
+        $user_info = get_userdata($user_id);
+        $user_name = $user_info ? $user_info->display_name : 'Unknown User';
+
         // Lo que se muestra en el shortcode.
-        $output .= '<img src="' . esc_url($qr_code_url) . '" alt="QR Code" style="width:200px;height:200px;"><br>';
+        $output .= '<img src="' . esc_url($qr_code_url) . '" alt="QR Code" style="width:125px;height:125px;"><br>';
         $output .= '<p>Código: ' . esc_html($unique_discount_code) . '</p>';
+        $output .= '<p>Nombre: ' . esc_html($user_name) . '</p>';
         $output .= '<p id="remainingDiscount">Cantidad restante: <strong>' . esc_html($remaining_discount) . ' €</strong></p>';
 
         if ($qr_code_used) {
@@ -69,7 +75,9 @@ class QR_Verify {
 
         // Actualización del descuento, funciona y todo
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_discount'])) {
-            $amount_used = floatval($_POST['amount_used']);
+            // Check if 'amount_used' is provided and is a valid number
+            $amount_used = isset($_POST['amount_used']) ? floatval($_POST['amount_used']) : 0;
+
             if ($amount_used > $remaining_discount) {
                 $output .= '<p>La cantidad ingresada excede el límite del descuento.</p>';
             } else {
@@ -79,18 +87,18 @@ class QR_Verify {
                     update_user_meta($user_id, 'qr_code_used', 'yes');
                 }
                 $output .= '<p>Descuento actualizado con éxito. Nuevo descuento restante: €' . $new_amount . '</p>';
-                $output .= '<p>Cantidad reducida: €' . number_format($amount_used, 2) . '</p>';  // Show the reduced amount
+                $output .= '<p>Cantidad reducida: €' . number_format($amount_used, 2) . '</p>';
                 // Refresh the page to reflect the updated discount without resubmitting the form
                 $redirect_url = add_query_arg('user_id', $user_id, get_permalink());
                 echo '<script>window.location.href = "' . esc_js($redirect_url) . '";</script>';
                 return;
             }
         }
-        
-        $output .= '<form method="post">
+
+        $output .= '<form method="post" style="display:none;">
                         Valor a descontar: <input type="number" name="amount_used" step="0.01" min="0.01" max="' . esc_attr($remaining_discount) . '" required>
                         <input type="hidden" name="user_id" value="' . esc_attr($user_id) . '"> <br><br>
-                        <button type="submit" name="update_discount">Aplicar descuento</button>
+                        <button  type="submit" name="update_discount">Aplicar descuento</button>
                     </form>';
 
         return $output;
@@ -98,9 +106,5 @@ class QR_Verify {
 }
 
 new QR_Verify();
-
-
-
-
 
 ?>
