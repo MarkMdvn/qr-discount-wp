@@ -29,13 +29,19 @@ When a "Normal User" registers and their location is confirmed to be within Tole
 * **Creates a scannable QR code** and a corresponding numeric code for the coupon.
 * **Populates the user's personal dashboard** with their coupon details, including the remaining balance.
 
+
 ### 3. Company Verification & Transaction Panel
 Registered companies have access to a secure dashboard designed for in-store use by their employees. This panel is the core of the redemption process:
 * **Dual Verification Method:** Employees can either scan a user's QR code using a webcam or smartphone camera, or manually input the numeric coupon code.
 * **Intelligent Discount Calculation:** Upon successful verification, the system prompts the employee to enter the customer's total purchase amount. It then automatically calculates and suggests applying 10% of the purchase value against the user's €10 coupon balance.
 * **Transaction Confirmation:** The employee confirms the transaction, which instantly updates the user's remaining coupon balance in the database.
+<img src="https://github.com/MarkMdvn/qr-discount-wp/blob/main/public/github-readme-images/1-panel-empleados.png" alt="Panel Overview" width="700"/>
+
 
 ### 4. Multi-Tiered Reporting Dashboards
+
+<img src="https://github.com/MarkMdvn/qr-discount-wp/blob/main/public/github-readme-images/3-transacciones-con-total.png" alt="Panel Overview" />
+
 
 To ensure complete transparency and data accessibility, the plugin features three distinct dashboards:
 
@@ -51,7 +57,9 @@ To ensure complete transparency and data accessibility, the plugin features thre
 * **Super Administrator Dashboard:**
     * A global overview of the entire campaign's performance.
     * Centralized view of all transactions from all participating companies.
-    * Advanced filtering capabilities to sort and analyze data by date range, specific company, and other metrics.
+    * Advanced filtering capabilities to sort and analyze data by date range, specific company, and other metrics.ç
+<img src="https://github.com/MarkMdvn/qr-discount-wp/blob/main/public/github-readme-images/2-transacciones-realizadas.png" alt="Panel Overview" width="900"/>
+
 
 ## Technical Implementation
 
