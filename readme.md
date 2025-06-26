@@ -35,7 +35,7 @@ Registered companies have access to a secure dashboard designed for in-store use
 * **Dual Verification Method:** Employees can either scan a user's QR code using a webcam or smartphone camera, or manually input the numeric coupon code.
 * **Intelligent Discount Calculation:** Upon successful verification, the system prompts the employee to enter the customer's total purchase amount. It then automatically calculates and suggests applying 10% of the purchase value against the user's €10 coupon balance.
 * **Transaction Confirmation:** The employee confirms the transaction, which instantly updates the user's remaining coupon balance in the database.
-<img src="https://github.com/MarkMdvn/qr-discount-wp/blob/main/public/github-readme-images/1-panel-empleados.png" alt="Panel Overview" width="700"/>
+<img src="https://github.com/MarkMdvn/qr-discount-wp/blob/main/public/github-readme-images/1-panel-empleados.png" alt="Panel Overview"  width="400"/>
 
 
 ### 4. Multi-Tiered Reporting Dashboards
