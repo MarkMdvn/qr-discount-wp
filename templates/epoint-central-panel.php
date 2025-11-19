@@ -87,23 +87,15 @@ global $wpdb;
 </style>
 
 <div class="button-container" style="margin: 20px;">
-    <div class="qr-code-availability" style="margin-left: 10%;">
-        <?php echo do_shortcode('[qr_code_availability]'); ?>
-    </div>
     <form id="date-filter" style="margin-bottom: 20px;">
         <label for="from-date">Desde:</label>
         <input type="date" id="from-date" name="from_date" required>
         <label for="to-date">Hasta:</label>
         <input type="date" id="to-date" name="to_date" required>
-        <label for="verifier-name">Nombre del comercio:</label>
-        <input type="text" id="verifier-name" name="verifier_name" placeholder="Optiaudio Toledo...">
         <button type="button" id="showTable1" onclick="updateTable('fetch_coupons')">Mostrar todos los cupones creados</button>
         <button type="button" id="showTable2" onclick="updateTable('fetch_transactions')">Mostrar todas las transacciones realizadas</button>
     </form>
 </div>
-
-
-
 
 <div id="table1" style="display:none;">
     <?php
@@ -134,7 +126,6 @@ global $wpdb;
     function updateTable(actionType) {
         var fromDate = document.getElementById('from-date').value;
         var toDate = document.getElementById('to-date').value;
-        var verifierName = document.getElementById('verifier-name').value; // Assuming you have an input for verifier name
 
         // Determine which table to update based on actionType
         var tableId = actionType === 'fetch_coupons' ? 'table1' : 'table2';
@@ -145,8 +136,7 @@ global $wpdb;
             data: {
                 action: actionType,
                 from_date: fromDate,
-                to_date: toDate,
-                verifier_name: verifierName // Passing the verifier name to the server
+                to_date: toDate
             },
             success: function(response) {
                 document.getElementById(tableId).innerHTML = response;
@@ -159,7 +149,6 @@ global $wpdb;
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('date-filter').addEventListener('submit', function(event) {
             event.preventDefault(); // Prevent the default form submission
-            updateTable(document.activeElement.id); // Call updateTable function based on the button pressed
         });
     });
 </script>

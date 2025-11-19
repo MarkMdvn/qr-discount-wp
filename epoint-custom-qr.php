@@ -10,6 +10,7 @@
  * Author URI:        https://markmd.netlify.app/
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Update URI:        https://example.com/my-plugin/
  * Text Domain:       epoint-custom-qr
  * Domain Path:       /languages
  */
@@ -44,33 +45,17 @@ function epoint_custom_qr_includes()
 
 add_action('plugins_loaded', 'epoint_custom_qr_includes');
 
-
-add_action('wp_ajax_generate_qr_code', 'handle_qr_code_generation');
-
-function handle_qr_code_generation() {
-    $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
-
-    if (!$user_id) {
-        wp_send_json_error('Invalid user ID.');
-        wp_die();
-    }
-
+function epoint_custom_qr_user_register($user_id)
+{
     $qr_generator = new QR_Generator();
     $qr_code_url = $qr_generator->generate_qr_code($user_id);
-
-    if (!$qr_code_url) {
-        wp_send_json_error('Failed to generate QR code.');
-        wp_die();
-    }
 
     $qr_mailer = new QR_Mailer();
     $qr_mailer->send_qr_code($user_id, $qr_code_url);
     update_user_meta($user_id, 'qr_code_url', $qr_code_url);
-
-    wp_send_json_success('QR Code generated successfully.');
-    wp_die();
 }
 
+add_action('user_register', 'epoint_custom_qr_user_register');
 
 function epoint_custom_add_user_endpoint()
 {
@@ -150,7 +135,7 @@ function filter_transactions_function()
     $transactions = $wpdb->get_results($query);
 
     if (!empty($transactions)) {
-        echo '<tr><th>ID de la transacción</th><th>Nombre</th><th>Cantidad inicial (€)</th><th>Descuento Aplicado (€)</th><th>Total cobrado (€)</th><th>Fecha y hora</th></tr>';
+        echo '<tr><th>ID de la transacción</th><th>Nombre</th><th>Email</th><th>Cantidad inicial (€)</th><th>Descuento Aplicado (€)</th><th>Total cobrado (€)</th><th>Fecha y hora</th></tr>';
         $totalAmount = 0;
         $totalDiscount = 0;
         $totalCharged = 0;
@@ -163,6 +148,7 @@ function filter_transactions_function()
             echo '<tr>';
             echo '<td>' . esc_html($transaction->transaction_id) . '</td>';
             echo '<td>' . esc_html($transaction->client_user_name) . '</td>';
+            echo '<td>' . esc_html($transaction->client_user_email) . '</td>';
             echo '<td>' . esc_html(number_format($transaction->total_amount, 2)) . '</td>';
             echo '<td>' . esc_html(number_format($transaction->discount_applied, 2)) . '</td>';
             echo '<td>' . esc_html(number_format($transaction->amount_charged, 2)) . '</td>';
@@ -172,7 +158,7 @@ function filter_transactions_function()
 
         // Append a totals row
         echo '<tr style="font-weight:bold; background-color:#e9ecef;">';
-        echo '<td colspan="2">Totales:</td>';
+        echo '<td colspan="3">Totales:</td>';
         echo '<td>' . esc_html(number_format($totalAmount, 2)) . ' €</td>';
         echo '<td>' . esc_html(number_format($totalDiscount, 2)) . ' €</td>';
         echo '<td>' . esc_html(number_format($totalCharged, 2)) . ' €</td>';
@@ -228,25 +214,18 @@ function fetch_transactions_function()
     global $wpdb;
     $from_date = sanitize_text_field($_POST['from_date']);
     $to_date = sanitize_text_field($_POST['to_date']);
-    $verifier_name = sanitize_text_field($_POST['verifier_name']);
 
     if (empty($from_date) || empty($to_date)) {
         echo "Please provide both start and end dates.";
         wp_die();
     }
 
-    $query = "SELECT * FROM rgsn_epoint_qr_transactions 
-              WHERE transaction_date BETWEEN %s AND %s";
-    $params = array($from_date, $to_date);
-
-    // Adding verifier name to the query if provided
-    if (!empty($verifier_name)) {
-        $query .= " AND verifier_user_name LIKE %s";
-        $params[] = '%' . $wpdb->esc_like($verifier_name) . '%'; // Adds wildcard search to the verifier name
-    }
-
-    $query .= " ORDER BY transaction_date DESC";
-    $results = $wpdb->get_results($wpdb->prepare($query, $params));
+    $results = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM rgsn_epoint_qr_transactions 
+        WHERE transaction_date BETWEEN %s AND %s 
+        ORDER BY transaction_date DESC",
+        $from_date, $to_date
+    ));
 
     if (!empty($results)) {
         $totalAmount = 0;
@@ -254,7 +233,7 @@ function fetch_transactions_function()
         $totalCharged = 0;
 
         echo '<table>';
-        echo '<tr><th>ID de transacción</th><th>ID del comercio verificador</th><th>Nombre del comercio</th><th>ID de usuario cliente</th><th>Nombre del cliente</th><th>Email del cliente</th><th>Código de descuento numérico</th><th>URL del código QR</th><th>Monto total (€)</th><th>Descuento aplicado (€)</th><th>Monto cobrado (€)</th><th>Fecha de transacción</th></tr>';
+        echo '<tr><th>ID de transacción</th><th>ID de usuario verificador</th><th>Nombre del verificador</th><th>ID de usuario cliente</th><th>Nombre del cliente</th><th>Email del cliente</th><th>Código de descuento numérico</th><th>URL del código QR</th><th>Monto total (€)</th><th>Descuento aplicado (€)</th><th>Monto cobrado (€)</th><th>Fecha de transacción</th></tr>';
         foreach ($results as $transaction) {
             $totalAmount += $transaction->total_amount;
             $totalDiscount += $transaction->discount_applied;
@@ -290,8 +269,6 @@ function fetch_transactions_function()
     }
     wp_die();
 }
-
-
 
 ?>
 
