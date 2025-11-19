@@ -1,5 +1,43 @@
 <?php
 class DB_Handler {
+
+    public function setup_database_table() {
+        global $wpdb;
+        $charset_collate = $wpdb->get_charset_collate();
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+
+        $table_name_codes = $wpdb->prefix . 'epoint_qr_codes';
+        $sql_codes = "CREATE TABLE $table_name_codes (
+            id mediumint(9) NOT NULL AUTO_INCREMENT,
+            user_id bigint(20) NOT NULL,
+            user_email varchar(100) NOT NULL,
+            display_name varchar(250) NOT NULL,
+            qr_code_url varchar(255) DEFAULT '' NOT NULL,
+            unique_discount_code varchar(255) DEFAULT '' NOT NULL,
+            creation_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            PRIMARY KEY  (id)
+        ) $charset_collate;";
+        dbDelta($sql_codes);
+
+        $table_name_transactions = $wpdb->prefix . 'epoint_qr_transactions';
+        $sql_transactions = "CREATE TABLE $table_name_transactions (
+            transaction_id mediumint(9) NOT NULL AUTO_INCREMENT,
+            verifier_user_id bigint(20) NOT NULL,
+            verifier_user_name varchar(250) NOT NULL,
+            client_user_id bigint(20) NOT NULL,
+            client_user_name varchar(250) NOT NULL,
+            client_user_email varchar(100) NOT NULL,
+            numeric_discount_code varchar(255) DEFAULT '' NOT NULL,
+            qr_code_url varchar(255) DEFAULT '' NOT NULL,
+            total_amount float(10, 2) NOT NULL,
+            discount_applied float(10, 2) NOT NULL,
+            amount_charged float(10, 2) NOT NULL,
+            transaction_date datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+            PRIMARY KEY  (transaction_id)
+        ) $charset_collate;";
+        dbDelta($sql_transactions);
+    }
+
     /**
      * Updates the status of a user's QR code to 'used'.
      *
