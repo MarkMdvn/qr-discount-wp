@@ -1,86 +1,151 @@
-# Epoint Custom QR - WordPress Discount Plugin
+# Epoint Custom QR
 
-## Project Overview
+Generate and manage custom QR codes with discounts for registered users. Allow employers to verify codes and apply discounts seamlessly.
 
-This repository contains the source code for **Epoint Custom QR**, a bespoke WordPress plugin developed from scratch for the digital business agency **Gestión de Negocios Digitales S.L. (epoint.es)**. The primary objective of this project was to automate and manage a hyper-localized promotional campaign in Toledo, Spain.
+---
 
-The plugin creates a sophisticated ecosystem for companies and consumers, integrating QR code technology, dynamic discount generation, and multi-layered dashboard management. It replaces a manual approval and tracking process with a seamless, automated, and auditable system. This solution required deep integration with the WordPress user system and two other third-party plugins to create a unified and powerful promotional tool.
+## Features
 
-## The Business Challenge
+- Automatically generates a QR code and a unique numeric discount code for new users upon registration.
+- Sends QR codes and discount codes via email.
+- Enables employers to verify and apply discounts using custom roles and capabilities.
+- Includes a customizable discount calculator.
+- Provides control panels for businesses and administrators:
+    - **Transaction History Panel**: For businesses to view their transaction history.
+    - **Central Panel**: For administrators to manage all QR codes and transactions.
+- Logs all discount transactions for auditing and reporting.
 
-The client, epoint.es, was launching a marketing campaign to stimulate the local economy in Toledo. The initial system required manual verification and approval for every participating company and a cumbersome process for tracking user discounts. This created significant administrative overhead and lacked real-time data for analysis.
+---
 
-The challenge was to architect a self-sustaining digital platform that could:
-* Differentiate between participating companies and general consumers.
-* Automatically issue and manage unique, location-aware discount coupons.
-* Provide a secure and intuitive method for companies to validate and redeem these coupons.
-* Offer detailed, real-time transaction reporting for users, companies, and a central administrator.
+## Installation
 
-## Core Features & Functionality
+1. Upload the plugin files to the `/wp-content/plugins/epoint-custom-qr` directory, or install the plugin through the WordPress Plugins screen directly.
+2. Activate the plugin through the "Plugins" screen in WordPress.
+3. Ensure your site meets the following requirements:
+    - **PHP**: Version 7.4 or higher.
+    - **Composer**: Required for the Endroid QR Code library.
 
-### 1. Dual User Role System
-The plugin extends the native WordPress user system to create two distinct roles with unique capabilities:
-* **Affiliated Companies:** Businesses approved for the campaign gain access to a dedicated control panel.
-* **Normal Users:** Consumers within the specified geographical area (Toledo, Castilla-La Mancha) who can receive and use discounts.
+---
 
-### 2. Dynamic & Geo-Targeted Coupon Generation
-When a "Normal User" registers and their location is confirmed to be within Toledo, the plugin automatically performs the following actions:
-* **Generates a unique €10 discount coupon.**
-* **Creates a scannable QR code** and a corresponding numeric code for the coupon.
-* **Populates the user's personal dashboard** with their coupon details, including the remaining balance.
+## Usage
+
+### For Users
+
+- Upon registration, a QR code and numeric discount code are generated automatically.
+- Users can view their QR code and discount details using the `[display_qr_code]` shortcode.
+- QR codes and discount details are also sent via email.
+
+### For Employers
+
+- Employers can verify discount codes via a dedicated page using the `[verify_qr_code]` shortcode.
+- Employers can apply discounts through an interactive calculator.
+
+### Control Panels
+
+#### 1. **Transaction History Panel**
+
+- **Template File**: `templates/epoint-business-transaction.php`
+- **Access Level**: Only accessible to logged-in business users.
+- **Functionality**:
+    - Businesses can view all transactions associated with their account.
+    - A date filter allows businesses to select specific date ranges for viewing transaction history.
+
+#### 2. **Central Panel**
+
+- **Template File**: `templates/epoint-central-panel.php`
+- **Access Level**: Only accessible to administrators.
+- **Functionality**:
+    - Displays all QR codes generated for all users on the site.
+    - Shows all transactions performed by all businesses registered on the site.
+    - Provides centralized control for managing coupons and tracking activity across the platform.
+
+---
+
+## Shortcodes
+
+- **`[display_qr_code]`**: Displays the user's QR code, numeric code, and remaining discount.
+- **`[verify_qr_code]`**: Provides a form for employers to verify and apply discounts.
+
+---
+
+## FAQ
+
+### What happens if a user loses their QR code?
+
+Users can log in to their account and view the QR code via the `[display_qr_code]` shortcode.
+
+### Can employers view transaction history?
+
+Yes, businesses can view transaction history on the Transaction History Panel. Administrators can view all transactions on the Central Panel.
+
+### Is the discount reusable?
+
+Discounts are limited to the remaining balance. Once the balance is fully used, the QR code is marked as "used."
+
+---
+
+## Screenshots
+
+1. **User QR Code Display**: Example of the QR code and discount details shown to users.
+2. **Employer Verification Page**: Form for verifying discount codes.
+3. **Discount Calculator**: Interactive calculator for applying discounts.
+4. **Transaction History Panel**: Date-filtered transaction history for businesses.
+5. **Central Panel**: Centralized dashboard for administrators to view all coupons and transactions.
+
+---
+
+## Changelog
+
+### Version 1.1
+
+- Added control panels:
+    - **Transaction History Panel** for businesses.
+    - **Central Panel** for administrators.
+- Enhanced logging for QR code and discount transactions.
+
+### Version 1.0
+
+- Initial release:
+    - QR code and numeric discount code generation upon user registration.
+    - Email delivery of QR codes.
+    - Employer verification and discount application.
+    - Transaction logging for audit and reporting.
+
+---
+
+## Development Notes
+
+### Folder Structure
+
+- `assets/`: Plugin assets (CSS, JS, images).
+- `includes/`: Core classes and functionality:
+    - `class-qr-generator.php`: Handles QR code generation.
+    - `class-mailer.php`: Sends QR codes via email.
+    - `class-db-handler.php`: Manages database operations and logs transactions.
+    - `class-qr-verifier.php`: Provides employer verification features.
+- `templates/`: HTML templates for custom outputs:
+    - `epoint-business-transaction.php`: Transaction history panel for businesses.
+    - `epoint-central-panel.php`: Central management panel for administrators.
+- `vendor/`: Third-party dependencies, including the Endroid QR Code library.
+
+### Dependencies
+
+- Install required dependencies using Composer:
+
+  bash
+
+  Copy code
+
+  `composer install`
 
 
-### 3. Company Verification & Transaction Panel
-Registered companies have access to a secure dashboard designed for in-store use by their employees. This panel is the core of the redemption process:
-* **Dual Verification Method:** Employees can either scan a user's QR code using a webcam or smartphone camera, or manually input the numeric coupon code.
-* **Intelligent Discount Calculation:** Upon successful verification, the system prompts the employee to enter the customer's total purchase amount. It then automatically calculates and suggests applying 10% of the purchase value against the user's €10 coupon balance.
-* **Transaction Confirmation:** The employee confirms the transaction, which instantly updates the user's remaining coupon balance in the database.
-<img src="https://github.com/MarkMdvn/qr-discount-wp/blob/main/public/github-readme-images/1-panel-empleados.png" alt="Panel Overview"  width="400"/>
+---
 
+## Future Plans
 
-### 4. Multi-Tiered Reporting Dashboards
+- Add more filtering options for transaction history.
+- Enhance reporting features in the Central Panel.
+- Introduce export options for transaction data (CSV, Excel).
+- Allow customization of email templates for sending QR codes.
 
-<img src="https://github.com/MarkMdvn/qr-discount-wp/blob/main/public/github-readme-images/3-transacciones-con-total.png" alt="Panel Overview" />
-
-
-To ensure complete transparency and data accessibility, the plugin features three distinct dashboards:
-
-* **User Dashboard:**
-    * Displays the current remaining balance on their discount coupon.
-    * Provides a complete transaction history, showing where and when they used their discount.
-
-* **Company Dashboard:**
-    * A comprehensive log of all transactions processed at their establishment.
-    * Detailed records include: the specific employee who processed the transaction, the original purchase amount, the discounted amount, the precise date and time.
-    * Features a popup modal to display the information of the customer who used the coupon for each transaction.
-
-* **Super Administrator Dashboard:**
-    * A global overview of the entire campaign's performance.
-    * Centralized view of all transactions from all participating companies.
-    * Advanced filtering capabilities to sort and analyze data by date range, specific company, and other metrics.ç
-<img src="https://github.com/MarkMdvn/qr-discount-wp/blob/main/public/github-readme-images/2-transacciones-realizadas.png" alt="Panel Overview" width="900"/>
-
-
-## Technical Implementation
-
-This plugin was built using a standard WordPress development stack, emphasizing security, scalability, and maintainability.
-
-* **Backend:** PHP, Object-Oriented Programming (OOP)
-* **Frontend:** JavaScript (for dynamic interactions), HTML5, CSS3
-* **Database:** Custom database tables within the WordPress DB schema to store transaction and coupon data efficiently.
-* **Core WordPress APIs:** Leveraged hooks and filters from the WordPress Core, including User Roles API, Shortcode API, and database functions (`$wpdb`).
-* **Integrations:** The system was designed to work in conjunction with two other plugins, hooking into their functionalities to create a seamless user experience.
-
-## Installation & Usage
-
-1.  Download the plugin files from this repository.
-2.  Upload the `epoint-custom-qr` folder to the `/wp-content/plugins/` directory.
-3.  Activate the plugin through the 'Plugins' menu in WordPress.
-4.  Use the following shortcodes to display the respective panels on your WordPress pages:
-    * `[company_dashboard]` - For the affiliated company panel.
-    * `[user_coupon_panel]` - For the normal user's discount display.
-    * `[superadmin_dashboard]` - For the administrator's global view.
-
-## License
-
-This project is licensed under the MIT License - see the `LICENSE.md` file for details.
+---
